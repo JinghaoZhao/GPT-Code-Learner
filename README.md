@@ -1,6 +1,8 @@
 # GPT-Code-Learner
 Learn A Repo Interactively with GPT-4. Ask questions to let the GPT explain the code to you.
 
+![GPT-Code-Learner.jpg](docs%2FGPT-Code-Learner.jpg)
+
 ## Installation
 
 1. Clone this repository and install the required packages:
