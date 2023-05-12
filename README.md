@@ -1,5 +1,5 @@
 # GPT-Code-Learner
-Learn A Repo Interactively with GPT-4. Ask questions to let the GPT explain the code to you.
+Learn A Repo Interactively with GPT. Ask questions to let the GPT explain the code to you.
 
 ![GPT-Code-Learner.jpg](docs%2FGPT-Code-Learner.jpg)
 
@@ -19,7 +19,7 @@ OPENAI_API_KEY=sk-xxxxxx
 cd code_repo
 git clone <repo_url>
 ```
-4. Run the IoT-GPT:
+4. Run the GPT-Code-Learner:
 ```
 python run.py
 ```
