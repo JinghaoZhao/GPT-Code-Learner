@@ -1,0 +1,12 @@
+python-dotenv
+hupper
+gradio
+termcolor
+openai
+tenacity
+supabase
+langchain
+tiktoken
+beautifulsoup4
+faiss-cpu
+pypdf
