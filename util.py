@@ -99,6 +99,8 @@ def bfs_folder_search(text_length_limit=4000, folder_path="./code_repo"):
                     parent_node[str(path.name)] = {"files": []}
                     queue.append((path, parent_node[str(path.name)]))
                 else:
+                    if "files" not in parent_node:
+                        parent_node["files"] = []
                     parent_node["files"].append(str(path.name))
 
                 # Check if we've exceeded the text length limit
@@ -124,6 +126,23 @@ def get_readme(code_repo_path="./code_repo"):
 
 def get_repo_structure(code_repo_path="./code_repo"):
     return bfs_folder_search(4000, code_repo_path)
+
+def extract_function_name(input):
+    system_prompt = """You are an expert developer and programmer. """
+    user_prompt = """
+        You will handle user questions about the code repository.
+        Please extract the function name appeared in the question.
+        Only response the function name without the parameters or any other words.
+
+        Below are two examples:
+        - Question: How to use the function extract_function_name?
+        - Answer: extract_function_name
+
+        - Question: How to use the function def supabase_vdb(query, knowledge_base):?
+        - Answer: supabase_vdb 
+
+        """ + f'Here is the user input: {input}'
+    return get_chat_response(system_prompt, user_prompt)
 
 
 if __name__ == "__main__":

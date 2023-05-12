@@ -4,6 +4,7 @@ import requests
 import os
 from termcolor import colored
 import util
+import tool_planner
 
 API_URL = "https://api.openai.com/v1/chat/completions"
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -26,6 +27,10 @@ system_prompt = """Now you are an expert programmer and teacher of a code reposi
 
 
 def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chatbot=[], history=[]):
+
+    # Inputs are pre-processed with extra tools
+    inputs = tool_planner.user_input_handler(inputs)
+
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {OPENAI_API_KEY}"
