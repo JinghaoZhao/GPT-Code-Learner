@@ -12,6 +12,7 @@ import pickle
 from langchain import OpenAI
 from langchain.chains import VectorDBQAWithSourcesChain
 
+
 def load_documents(filenames):
     text_splitter = CharacterTextSplitter(chunk_size=1500, chunk_overlap=0)
     docs = []
@@ -44,37 +45,45 @@ def load_urls(urls):
     return docs, metadatas
 
 
-def local_vdb(query, knowledge_base, store_vdb=True):
-    faiss_store = FAISS.from_documents(knowledge_base["known_docs"], embedding=OpenAIEmbeddings())
-    faiss_store.add_texts(knowledge_base["known_text"]["pages"], metadatas=knowledge_base["known_text"]["metadatas"])
-    if store_vdb:
-        with open("faiss_store.pkl", "wb") as f:
+def load_code_chunks(chunks, filepath):
+    text_splitter = CharacterTextSplitter(chunk_size=1500, separator="\n")
+    docs, metadatas = [], []
+    for chunk in chunks:
+        splits = text_splitter.split_text(chunk)
+        docs.extend(splits)
+        metadatas.extend([{"source": filepath}] * len(splits))
+    print(f"Split {filepath} into {len(docs)} pieces")
+    return docs, metadatas
+
+
+def local_vdb(knowledge, vdb_path=None):
+    faiss_store = FAISS.from_documents(knowledge["known_docs"], embedding=OpenAIEmbeddings())
+    faiss_store.add_texts(knowledge["known_text"]["pages"], metadatas=knowledge["known_text"]["metadatas"])
+    if vdb_path is not None:
+        with open(vdb_path, "wb") as f:
             pickle.dump(faiss_store, f)
-    else:
-        with open("faiss_store.pkl", "rb") as f:
-            faiss_store = pickle.load(f)
-
-    matched_docs = faiss_store.similarity_search_with_relevance_scores(query)
-
-    for doc in matched_docs:
-        print("------------------------\n", doc)
 
     return faiss_store
 
-def supabase_vdb(query, knowledge_base):
+
+def load_local_vdb(vdb_path):
+    with open(vdb_path, "rb") as f:
+        faiss_store = pickle.load(f)
+
+    return faiss_store
+
+
+def supabase_vdb(knowledge):
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_KEY")
     supabase: Client = create_client(supabase_url, supabase_key)
 
     vector_store = SupabaseVectorStore(client=supabase, embedding=OpenAIEmbeddings(), table_name="documents")
-    vector_store.add_documents(knowledge_base["known_docs"])
-    vector_store.add_texts(knowledge_base["known_text"]["pages"], metadatas=knowledge_base["known_text"]["metadatas"])
-    matched_docs = vector_store.similarity_search_with_relevance_scores(query)
-
-    for doc in matched_docs:
-        print("------------------------\n", doc)
+    vector_store.add_documents(knowledge["known_docs"])
+    vector_store.add_texts(knowledge["known_text"]["pages"], metadatas=knowledge["known_text"]["metadatas"])
 
     return vector_store
+
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
@@ -87,23 +96,22 @@ if __name__ == "__main__":
     known_docs = load_documents(files)
     known_pages, metadatas = load_urls(urls)
 
-    knowledge_base = {
-        "known_docs": known_docs,
-        "known_text": {
-            "pages": known_pages,
-            "metadatas": metadatas
-        }
-    }
+    knowledge_base = {"known_docs": known_docs, "known_text": {"pages": known_pages, "metadatas": metadatas}}
 
-    faiss_store = local_vdb(query, knowledge_base)
-    supabase_store = supabase_vdb(query, knowledge_base)
+    faiss_store = local_vdb(knowledge_base)
+    matched_docs = faiss_store.similarity_search_with_relevance_scores(query)
+    for doc in matched_docs:
+        print("------------------------\n", doc)
 
-    chain = VectorDBQAWithSourcesChain.from_llm(
-        llm=OpenAI(temperature=0), vectorstore=faiss_store)
+    supabase_store = supabase_vdb(knowledge_base)
+    matched_docs = supabase_store.similarity_search_with_relevance_scores(query)
+    for doc in matched_docs:
+        print("------------------------\n", doc)
+
+    chain = VectorDBQAWithSourcesChain.from_llm(llm=OpenAI(temperature=0), vectorstore=faiss_store)
     result = chain({"question": query})
     print("FAISS result", result)
 
-    chain = VectorDBQAWithSourcesChain.from_llm(
-        llm=OpenAI(temperature=0), vectorstore=supabase_store)
+    chain = VectorDBQAWithSourcesChain.from_llm(llm=OpenAI(temperature=0), vectorstore=supabase_store)
     result = chain({"question": query})
     print("Supabase result", result)
