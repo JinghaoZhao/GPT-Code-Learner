@@ -13,11 +13,11 @@ def tool_selection(input):
 
         The tools are defined as follows:
 
-        - Code_Searcher: This tool searches keywords extracted from the the user query in the code repository. We consider using "Code_Searcher" when the user question specifies specific functions or variables. For example, this tool is used to handle questions such as “How to use the function extract_function_name?”, “How to use the function def supabase_vdb():”, etc.
+        - Code_Searcher: This module is designed to search for specific keywords in a code repository that are derived from a user's query. It is particularly beneficial when the user's question pertains to particular functions or variables. As an illustration, this tool could answer queries such as "How do I utilize the function named 'extract_function_name'?" or "How should I apply the function 'def supabase_vdb()?'".
 
-        - Repo_Parser: This tool performs a fuzzy search on the code repo. It provides contexts for questions about the general procedures in the repo. The question could be high-level and involves multiple source code files and documents. For example, this tool is used to handle questions such as “What function processes the incoming message?”, “How does the code store the knowledge base?”, etc.
+        - Repo_Parser: This module conducts a fuzzy search within a code repository, offering context for inquiries concerning general procedures and operations in the repository. The inquiries may be high-level, potentially involving multiple source code files and documents. For instance, this tool could handle queries like "Which function is in charge of processing incoming messages?" or "How does the code manage the knowledge base?".
 
-        - No_Tool: This is the default tool when the question does not specific to the code repository. You should use this tool when you cannot find use any tools above to answer the question. For example, this tool is used to handle questions such as “What is the programming language of this repo?”, “What is the framework used in this repo?”, etc.
+        - No_Tool: This is the default module that comes into play when the user's query doesn't have a direct connection to the code repository or when other tools can't provide a suitable answer. This module is particularly useful for handling generic programming queries that aren't specific to the codebase in question. For instance, it could address questions like "How is the 'asyncio' library used in Python?" or "Can you explain the workings of smart pointers in C++?".
 
 
         Below are some example questions and answers:
