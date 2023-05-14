@@ -27,6 +27,7 @@ python run.py
 
 
 ## Knowledge Base
-This feature is still under development.
-
 GPT-Code-Learner supports using a knowledge base to answer repo-related questions. By default, it will use the source codes as the knowledge base. You can preload documents or provide URLs as background knowledge for the repo. More details can be found in [Knowledge Base](docs/KnowledgeBase.md).
+
+## Tool Planner
+The core of the GPT-Code-Learner is the tool planner. It leverages available tools to process the input to provide contexts.

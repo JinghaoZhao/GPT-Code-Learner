@@ -64,24 +64,45 @@ def generate_knowledge_from_repo(dir_path, ignore_list):
     return knowledge
 
 
-if __name__ == '__main__':
-    load_dotenv(find_dotenv())
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
+def get_folder_names(dir_path):
+    folder_names = [name for name in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, name))]
+    concatenated_names = "-".join(folder_names)
+    return concatenated_names
 
-    query = "How to use the knowledge base?"
-
-    vdb_path = "./vdb2.pkl"
+def generate_or_load_knowledge_from_repo(dir_path="./code_repo"):
+    vdb_path = "./vdb-" + get_folder_names(dir_path) + ".pkl"
     # check if vdb_path exists
     if os.path.isfile(vdb_path):
         vdb = load_local_vdb(vdb_path)
     else:
         ignore_list = ['.git', 'node_modules', '__pycache__', '.idea',
-                       '.vscode']  # Add more items to this list as needed
-        knowledge = generate_knowledge_from_repo("./code_repo", ignore_list)
+                       '.vscode']
+        knowledge = generate_knowledge_from_repo(dir_path, ignore_list)
         vdb = local_vdb(knowledge, vdb_path=vdb_path)
+    return vdb
 
-    matched_docs = vdb.similarity_search_with_relevance_scores(query, k=5)
-    for doc in matched_docs:
-        print("------------------------\n", doc)
+
+def get_repo_context(query, vdb):
+    matched_docs = vdb.similarity_search_with_relevance_scores(query, k=10)
+    output = ""
+    for idx, docs in enumerate(matched_docs):
+        output += f"Context {idx}:\n"
+        output += str(docs)
+        output += "\n\n"
+    return output
+
+
+if __name__ == '__main__':
+    print(get_folder_names("./code_repo"))
+
+    load_dotenv(find_dotenv())
+    openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+    query = "How to use the knowledge base?"
+
+    vdb = generate_or_load_knowledge_from_repo("./code_repo")
+
+    context = get_repo_context(query, vdb)
+    print(context)
 
 

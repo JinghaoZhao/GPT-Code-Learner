@@ -96,8 +96,12 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
             chunk = chunk.decode()
 
             # Check if the chatbot is done generating the response
-            if len(chunk) > 12 and "finish_reason" in json.loads(chunk[6:])['choices'][0]:
-                response_complete = json.loads(chunk[6:])['choices'][0].get("finish_reason", None) == "stop"
+            try:
+                if len(chunk) > 12 and "finish_reason" in json.loads(chunk[6:])['choices'][0]:
+                    response_complete = json.loads(chunk[6:])['choices'][0].get("finish_reason", None) == "stop"
+            except:
+                print("Error in response_complete check")
+                pass
 
             if len(chunk) > 12 and "content" in json.loads(chunk[6:])['choices'][0]['delta']:
                 partial_words = partial_words + json.loads(chunk[6:])['choices'][0]["delta"]["content"]
