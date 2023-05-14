@@ -82,22 +82,25 @@ def find_repo_folder(directory):
 
 def find_readme(repo_folder):
     # Search for the README file within the found folder
-    readme_path = os.path.join(repo_folder, "README.md")
-    print(readme_path)
-    if os.path.isfile(readme_path):
-        print("README found in folder:", repo_folder)
-        return readme_path
-    else:
-        print("README not found in folder:", repo_folder)
-        return None
+    for filename in os.listdir(repo_folder):
+        if filename.lower().startswith('readme'):
+            readme_path = os.path.join(repo_folder, filename)
+            print("README found in folder:", repo_folder)
+            return readme_path
+
+    print("README not found in folder:", repo_folder)
+    return None
 
 
 # summarize the README file
 def summarize_readme(readme_path):
     if readme_path:
+        print(colored("Summarizing README...", "green"))
+
         system_prompt = """You are an expert developer and programmer. 
             Please infer the programming languages from the README.
-            You are asked to summarize the README file of the code repository. 
+            You are asked to summarize the README file of the code repository in detail. 
+            Provide enough information about the code repository.
             Please also mention the framework used in the code repository.
             """
         readme_content = open(readme_path, "r").read()
@@ -141,11 +144,14 @@ def bfs_folder_search(text_length_limit=4000, folder_path="./code_repo"):
 
 def get_readme(code_repo_path="./code_repo"):
     repo_folder = find_repo_folder(code_repo_path)
-    print(repo_folder)
+    print(colored("Repo folder: " + repo_folder, "green"))
     readme_path = find_readme(repo_folder)
-    summary = summarize_readme(readme_path)
-    print(colored(summary, "green"))
-    return summary
+    if readme_path is None:
+        return "README not found"
+    else:
+        summary = summarize_readme(readme_path)
+        print(colored("README Summary: ", "green"), colored(summary, "green"))
+        return summary
 
 
 def get_repo_structure(code_repo_path="./code_repo"):
@@ -162,8 +168,10 @@ def generate_or_load_knowledge_from_repo(dir_path="./code_repo"):
     vdb_path = "./vdb-" + get_repo_names(dir_path) + ".pkl"
     # check if vdb_path exists
     if os.path.isfile(vdb_path):
+        print(colored("Local VDB found! Loading VDB from file...", "green"))
         vdb = load_local_vdb(vdb_path)
     else:
+        print(colored("Generating VDB from repo...", "green"))
         ignore_list = ['.git', 'node_modules', '__pycache__', '.idea',
                        '.vscode']
         knowledge = generate_knowledge_from_repo(dir_path, ignore_list)

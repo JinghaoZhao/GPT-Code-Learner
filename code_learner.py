@@ -52,7 +52,7 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
 
     if chat_counter == 0:
         payload = {
-            "model": "gpt-3.5-turbo",
+            "model": "gpt-3.5-turbo", # "gpt-4", "gpt-3.5-turbo", etc.
             "messages": initial_message,
             "temperature": temperature,
             "top_p": top_p,
@@ -83,7 +83,7 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
     chat_counter += 1
     history.append(orig_inputs)
     print(colored("Orig input from the user: ", "green"), colored(orig_inputs, "green"))
-    print(colored("Input with tools: ", "red"), colored(inputs, "red"))
+    print(colored("Input with tools: ", "blue"), colored(inputs, "blue"))
     response = requests.post(API_URL, headers=headers, json=payload, stream=True)
     token_counter = 0
     partial_words = ""
@@ -101,7 +101,8 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
 
         if chunk.decode():
             chunk = chunk.decode()
-            print(colored("Chunk: ", "blue"), colored(chunk, "blue"))
+            if chunk.startswith("error:"):
+                print(colored("Chunk: ", "red"), colored(chunk, "red"))
 
             # Check if the chatbot is done generating the response
             try:
@@ -111,15 +112,19 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
                 print("Error in response_complete check")
                 pass
 
-            if len(chunk) > 12 and "content" in json.loads(chunk[6:])['choices'][0]['delta']:
-                partial_words = partial_words + json.loads(chunk[6:])['choices'][0]["delta"]["content"]
-                if token_counter == 0:
-                    history.append(" " + partial_words)
-                else:
-                    history[-1] = partial_words
-                chat = [(history[i], history[i + 1]) for i in range(0, len(history) - 1, 2)]
-                token_counter += 1
-                yield chat, history, chat_counter, response
+            try:
+                if len(chunk) > 12 and "content" in json.loads(chunk[6:])['choices'][0]['delta']:
+                    partial_words = partial_words + json.loads(chunk[6:])['choices'][0]["delta"]["content"]
+                    if token_counter == 0:
+                        history.append(" " + partial_words)
+                    else:
+                        history[-1] = partial_words
+                    chat = [(history[i], history[i + 1]) for i in range(0, len(history) - 1, 2)]
+                    token_counter += 1
+                    yield chat, history, chat_counter, response
+            except:
+                print("Error in partial_words check")
+                pass
 
 
 def reset_textbox():

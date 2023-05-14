@@ -1,7 +1,7 @@
 from code_searcher import get_function_context
 from repo_parser import generate_or_load_knowledge_from_repo, get_repo_context
+from termcolor import colored
 import util
-
 
 
 def tool_selection(input):
@@ -69,7 +69,7 @@ def extract_function_name(input):
 
 def user_input_handler(input):
     tool = tool_selection(input)
-    print(tool)
+    print(colored(f"Tool selected: {tool}", "green"))
     if tool == "Code_Searcher":
         # extract the function or variable name from the input
         function_name = extract_function_name(input)
