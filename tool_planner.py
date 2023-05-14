@@ -1,6 +1,7 @@
 from code_searcher import get_function_context
+from repo_parser import generate_or_load_knowledge_from_repo, get_repo_context
 import util
-import repo_parser
+
 
 
 def tool_selection(input):
@@ -80,8 +81,8 @@ def user_input_handler(input):
                      f"Here are some the contexts of the function or variable {function_name}: \n\n" + context
             return prompt
     elif tool == "Repo_Parser":
-        vdb = repo_parser.generate_or_load_knowledge_from_repo()
-        context = repo_parser.get_repo_context(input, vdb)
+        vdb = generate_or_load_knowledge_from_repo()
+        context = get_repo_context(input, vdb)
         prompt = input + "\n\n" + \
                  f"Here are some contexts about the question, which are ranked by the relevance to the question: \n\n" + context
         return prompt

@@ -27,8 +27,15 @@ system_prompt = """Now you are an expert programmer and teacher of a code reposi
 
 
 def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chatbot=[], history=[]):
+    orig_inputs = inputs
+
     # Inputs are pre-processed with extra tools
     inputs = tool_planner.user_input_handler(inputs)
+
+    print("Inputs Length: ", len(inputs))
+    # Add checker for the input length to fitin the GPT model window size
+    if len(inputs) > 8000:
+        inputs = inputs[:8000]
 
     headers = {
         "Content-Type": "application/json",
@@ -74,8 +81,9 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
             "frequency_penalty": 0, }
 
     chat_counter += 1
-    history.append(inputs)
-    print(colored("Inputs: ", "green"), colored(inputs, "green"))
+    history.append(orig_inputs)
+    print(colored("Orig input from the user: ", "green"), colored(orig_inputs, "green"))
+    print(colored("Input with tools: ", "red"), colored(inputs, "red"))
     response = requests.post(API_URL, headers=headers, json=payload, stream=True)
     token_counter = 0
     partial_words = ""
@@ -93,6 +101,7 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
 
         if chunk.decode():
             chunk = chunk.decode()
+            print(colored("Chunk: ", "blue"), colored(chunk, "blue"))
 
             # Check if the chatbot is done generating the response
             try:
@@ -171,6 +180,7 @@ def main():
             with gr.Accordion(label="Examples", open=True):
                 gr.Examples(
                     examples=[
+                        ["What is the usage of this repo?"],
                         ["Which function lunch the application in the repo?"],
                     ],
                     inputs=inputs)
