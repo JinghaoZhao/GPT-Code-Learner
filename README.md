@@ -3,6 +3,9 @@ Learn A Repo Interactively with GPT. Ask questions to let the GPT explain the co
 
 ![GPT-Code-Learner.jpg](docs%2FGPT-Code-Learner.jpg)
 
+### Try it out in your browser
+![GUI.jpg](docs%2FGUI.jpg)
+
 ## Installation
 
 1. Clone this repository and install the required packages:
