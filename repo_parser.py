@@ -1,9 +1,13 @@
 import os
+import json
 import chardet
 import openai
 from termcolor import colored
 from dotenv import load_dotenv, find_dotenv
 from knowledge_base import load_documents, load_code_chunks, supabase_vdb, local_vdb, load_local_vdb
+from collections import deque
+from pathlib import Path
+import util
 
 
 def split_file_content_by_function(filepath, file_ext):
@@ -64,13 +68,98 @@ def generate_knowledge_from_repo(dir_path, ignore_list):
     return knowledge
 
 
-def get_folder_names(dir_path):
+# Find the Readme.md file from the code repo in the code_repo folder
+def find_repo_folder(directory):
+    # Find the name of the folder in the specified directory
+    folder_name = None
+    for item in os.listdir(directory):
+        item_path = os.path.join(directory, item)
+        if os.path.isdir(item_path):
+            folder_name = item
+            break
+    return os.path.join(directory, folder_name)
+
+
+def find_readme(repo_folder):
+    # Search for the README file within the found folder
+    readme_path = os.path.join(repo_folder, "README.md")
+    print(readme_path)
+    if os.path.isfile(readme_path):
+        print("README found in folder:", repo_folder)
+        return readme_path
+    else:
+        print("README not found in folder:", repo_folder)
+        return None
+
+
+# summarize the README file
+def summarize_readme(readme_path):
+    if readme_path:
+        system_prompt = """You are an expert developer and programmer. 
+            Please infer the programming languages from the README.
+            You are asked to summarize the README file of the code repository. 
+            Please also mention the framework used in the code repository.
+            """
+        readme_content = open(readme_path, "r").read()
+        user_prompt = f'Here is the README content: {readme_content}'
+        return util.get_chat_response(system_prompt, user_prompt)
+
+
+def bfs_folder_search(text_length_limit=4000, folder_path="./code_repo"):
+    if not Path(folder_path).is_dir():
+        return "Invalid directory path"
+
+    root = Path(folder_path).resolve()
+    file_structure = {str(root): {}}
+    queue = deque([(root, file_structure[str(root)])])
+
+    while queue:
+        current_dir, parent_node = queue.popleft()
+        try:
+            for path in current_dir.iterdir():
+                if path.is_dir():
+                    if str(path.name) == ".git":
+                        continue
+                    parent_node[str(path.name)] = {"files": []}
+                    queue.append((path, parent_node[str(path.name)]))
+                else:
+                    if "files" not in parent_node:
+                        parent_node["files"] = []
+                    parent_node["files"].append(str(path.name))
+
+                # Check if we've exceeded the text length limit
+                file_structure_text = json.dumps(file_structure)
+                if len(file_structure_text) >= text_length_limit:
+                    return file_structure_text
+
+        except PermissionError:
+            # This can happen in directories the user doesn't have permission to read.
+            continue
+
+    return json.dumps(file_structure)
+
+
+def get_readme(code_repo_path="./code_repo"):
+    repo_folder = find_repo_folder(code_repo_path)
+    print(repo_folder)
+    readme_path = find_readme(repo_folder)
+    summary = summarize_readme(readme_path)
+    print(colored(summary, "green"))
+    return summary
+
+
+def get_repo_structure(code_repo_path="./code_repo"):
+    return bfs_folder_search(4000, code_repo_path)
+
+
+def get_repo_names(dir_path):
     folder_names = [name for name in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, name))]
     concatenated_names = "-".join(folder_names)
     return concatenated_names
 
+
 def generate_or_load_knowledge_from_repo(dir_path="./code_repo"):
-    vdb_path = "./vdb-" + get_folder_names(dir_path) + ".pkl"
+    vdb_path = "./vdb-" + get_repo_names(dir_path) + ".pkl"
     # check if vdb_path exists
     if os.path.isfile(vdb_path):
         vdb = load_local_vdb(vdb_path)
@@ -93,16 +182,20 @@ def get_repo_context(query, vdb):
 
 
 if __name__ == '__main__':
-    print(get_folder_names("./code_repo"))
-
+    code_repo_path = "./code_repo"
     load_dotenv(find_dotenv())
     openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-    query = "How to use the knowledge base?"
+    print(get_repo_names(code_repo_path))
 
+    # Basic repo information
+    get_readme(code_repo_path)
+    print(colored(bfs_folder_search(4000, code_repo_path), "yellow"))
+
+    # Generate knowledge base
     vdb = generate_or_load_knowledge_from_repo("./code_repo")
 
+    # Search the knowledge base
+    query = "How to use the knowledge base?"
     context = get_repo_context(query, vdb)
     print(context)
-
-
