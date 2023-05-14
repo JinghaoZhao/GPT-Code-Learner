@@ -27,7 +27,15 @@ python run.py
 
 
 ## Knowledge Base
-GPT-Code-Learner supports using a knowledge base to answer repo-related questions. By default, it will use the source codes as the knowledge base. You can preload documents or provide URLs as background knowledge for the repo. More details can be found in [Knowledge Base](docs/KnowledgeBase.md).
+GPT-Code-Learner generates vector database from the code repo as a knowledge base to answer repo-related questions. By default, it will use the source codes as the knowledge base. More details can be found in [Knowledge Base](docs/KnowledgeBase.md).
 
 ## Tool Planner
 The core of the GPT-Code-Learner is the tool planner. It leverages available tools to process the input to provide contexts.
+
+Currently, the tool planner supports the following tools:
+
+- **Code_Searcher**: This tool searches keywords (e.g., specific functions or variables) extracted from user query in the code repository
+
+- **Repo_Parser**: This tool performs a fuzzy search with vector database of the code repo. It provides contexts for questions about the general procedures in the repo.
+
+More tools are under development. Feel free to contribute to this project!

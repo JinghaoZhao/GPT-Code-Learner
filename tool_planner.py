@@ -13,7 +13,7 @@ def tool_selection(input):
 
         The tools are defined as follows:
 
-        - Code_Searcher: This tool searches keywords extracted from user input in the code repository. We consider using "Code_Searcher" when the user question specifies specific functions or variables. For example, this tool is used to handle questions such as “How to use the function extract_function_name?”, “How to use the function def supabase_vdb():”, etc.
+        - Code_Searcher: This tool searches keywords extracted from the the user query in the code repository. We consider using "Code_Searcher" when the user question specifies specific functions or variables. For example, this tool is used to handle questions such as “How to use the function extract_function_name?”, “How to use the function def supabase_vdb():”, etc.
 
         - Repo_Parser: This tool performs a fuzzy search on the code repo. It provides contexts for questions about the general procedures in the repo. The question could be high-level and involves multiple source code files and documents. For example, this tool is used to handle questions such as “What function processes the incoming message?”, “How does the code store the knowledge base?”, etc.
 

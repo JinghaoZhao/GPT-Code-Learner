@@ -89,9 +89,9 @@ if __name__ == "__main__":
     load_dotenv(find_dotenv())
     openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-    query = "What protocols are supported by IoT GPT?"
-    files = ["./config_template.yaml"]
-    urls = ["https://github.com/JinghaoZhao/IoT-GPT"]
+    query = "What is the usage of this repo?"
+    files = ["./README.md"]
+    urls = ["https://github.com/JinghaoZhao/GPT-Code-Learner"]
 
     known_docs = load_documents(files)
     known_pages, metadatas = load_urls(urls)

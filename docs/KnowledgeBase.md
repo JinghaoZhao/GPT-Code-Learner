@@ -1,8 +1,10 @@
 # Knowledge Base
 
-GPT-Code-Learner supports using a knowledge base to answer questions. By default, it will use the codebase as the knowledge base. You can preload documents or provide URLs as background knowledge for the repo you want to learned.
+GPT-Code-Learner supports using a knowledge base to answer questions. By default, it will use the codebase as the knowledge base. 
 
-The knowledge base is powered by a vector database. The local version uses [FAISS](https://github.com/facebookresearch/faiss), while the cloud version utilizes [Supabase](https://app.supabase.com/).
+The knowledge base is powered by a vector database. GPT-Code-Learner supports two types of vector databases: local or cloud. By default, it will use the local version.
+
+The local version uses [FAISS](https://github.com/facebookresearch/faiss), while the cloud version utilizes [Supabase](https://app.supabase.com/).
 
 ## Supabase Setup
 
