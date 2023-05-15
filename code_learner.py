@@ -11,9 +11,13 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 code_repo_path = "./code_repo"
 
-readme_info = """The README.md file is as follows: """ + get_readme(code_repo_path) + "\n\n"
+readme_info = get_readme(code_repo_path)
+if readme_info is not None:
+    readme_info = """The README.md file is as follows: """ + readme_info + "\n\n"
 
-repo_structure = """The repo structure is as follows: """ + get_repo_structure(code_repo_path) + "\n\n"
+repo_structure = get_repo_structure(code_repo_path)
+if repo_structure is not None:
+    repo_structure = """The repo structure is as follows: """ + get_repo_structure(code_repo_path) + "\n\n"
 
 system_prompt = """Now you are an expert programmer and teacher of a code repository. 
     You will be asked to explain the code for a specific task in the repo.
