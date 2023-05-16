@@ -180,7 +180,7 @@ def generate_or_load_knowledge_from_repo(dir_path="./code_repo"):
 
 
 def get_repo_context(query, vdb):
-    matched_docs = vdb.similarity_search_with_relevance_scores(query, k=10)
+    matched_docs = vdb.similarity_search(query, k=10)
     output = ""
     for idx, docs in enumerate(matched_docs):
         output += f"Context {idx}:\n"
@@ -192,7 +192,7 @@ def get_repo_context(query, vdb):
 if __name__ == '__main__':
     code_repo_path = "./code_repo"
     load_dotenv(find_dotenv())
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
+    openai.api_key = os.environ.get("OPENAI_API_KEY", "null")
 
     print(get_repo_names(code_repo_path))
 
