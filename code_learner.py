@@ -6,8 +6,15 @@ from termcolor import colored
 from repo_parser import get_readme, get_repo_structure
 import tool_planner
 
-API_URL = "https://api.openai.com/v1/chat/completions"
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+
+llm_type = os.environ.get('LLM_TYPE', "local")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "null")
+if llm_type == "local":
+    API_URL = "http://localhost:8080/v1/chat/completions"
+    model = "ggml-alpaca-7b-q4.bin"
+else:
+    API_URL = "https://api.openai.com/v1/chat/completions"
+    model = "gpt-3.5-turbo"
 
 code_repo_path = "./code_repo"
 
@@ -19,15 +26,19 @@ repo_structure = get_repo_structure(code_repo_path)
 if repo_structure is not None:
     repo_structure = """The repo structure is as follows: """ + get_repo_structure(code_repo_path) + "\n\n"
 
-system_prompt = """Now you are an expert programmer and teacher of a code repository. 
+init_system_prompt = """Now you are an expert programmer and teacher of a code repository. 
     You will be asked to explain the code for a specific task in the repo.
-    You will be asked to explain the code to a computer science student.
-    You will be provided with some related code snippets related to the question, for example, the calling stacks, the code that calls the target functions, etc.
-    Please think the explanation step-by-step, and explain the code in a way that the student can understand.
+    You will be provided with some related code snippets or documents related to the question.
+    Please think the explanation step-by-step.
     Please answer the questions based on your knowledge, and you can also refer to the provided related code snippets.
     The README.md file and the repo structure are also available for your reference.
-    If you need any details clarified, please ask questions until all issues are clarified. \n\n
-""" + readme_info + repo_structure
+    If you need any details clarified, please ask questions until all issues are clarified.
+"""
+system_prompt = init_system_prompt
+if readme_info:
+    system_prompt += readme_info
+if repo_structure:
+    system_prompt += repo_structure
 
 
 def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chatbot=[], history=[]):
@@ -38,8 +49,12 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
 
     print("Inputs Length: ", len(inputs))
     # Add checker for the input length to fitin the GPT model window size
-    if len(inputs) > 8000:
-        inputs = inputs[:8000]
+    if llm_type == "local":
+        token_limit = 2000
+    else:
+        token_limit = 8000
+    if len(inputs) > token_limit:
+        inputs = inputs[:token_limit]
 
     headers = {
         "Content-Type": "application/json",
@@ -50,13 +65,13 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
         initial_message = [{"role": "user", "content": f"{inputs}"}]
         multi_turn_message = []
     else:
-        initial_message = [{"role": "system", "content": system_msg},
+        initial_message = [{"role": "system", "content": init_system_prompt},
                            {"role": "user", "content": f"{inputs}"}]
-        multi_turn_message = [{"role": "system", "content": system_msg}]
+        multi_turn_message = [{"role": "system", "content": system_prompt}]
 
     if chat_counter == 0:
         payload = {
-            "model": "gpt-3.5-turbo", # "gpt-4", "gpt-3.5-turbo", etc.
+            "model": model,
             "messages": initial_message,
             "temperature": temperature,
             "top_p": top_p,
@@ -75,7 +90,7 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
         messages.append(temp)
 
         payload = {
-            "model": "gpt-3.5-turbo",
+            "model": model,
             "messages": messages,
             "temperature": temperature,
             "top_p": top_p,
