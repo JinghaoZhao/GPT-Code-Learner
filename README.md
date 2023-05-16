@@ -6,6 +6,14 @@ Learn A Repo Interactively with GPT. Ask questions to let the GPT explain the co
 ### Try it out in your browser
 ![GUI.jpg](docs%2FGUI.jpg)
 
+
+## Local LLM Support (Experimental)
+GPT-Code-Learner supports running the LLM models locally. In general, GPT-Code-Learner uses [LocalAI](https://github.com/go-skynet/LocalAI) for local private LLM and [Sentence Transformers](https://huggingface.co/sentence-transformers) for local embedding.
+
+Please refer to [Local LLM](docs/LocalLLM.md) for more details.
+
+<span style="color:red">Note: Due to the current capability of local LLM, the performance of GPT-Code-Learner is not as good as the online version. </span>
+
 ## Installation
 
 1. Clone this repository and install the required packages:
@@ -16,16 +24,22 @@ pip install -r requirements.txt
 2. Create a `.env` file to put your API key:
 ```
 OPENAI_API_KEY=sk-xxxxxx
+LLM_TYPE="OpenAI"
+```
+If you want to run the whole program locally, please change the following line in the `.env` file:
+```
+LLM_TYPE="local"
 ```
 3. clone the repo you want to learn into `code_repo` folder:
 ```
 cd code_repo
 git clone <repo_url>
 ```
-4. Run the GPT-Code-Learner:
+4. Run the GPT-Code-Learner. If you use local LLM models, please run the local model before running the GPT-Code-Learner. Please refer to [Local LLM](docs/LocalLLM.md) for more details.
 ```
 python run.py
 ```
+
 5. Open your web browser at http://127.0.0.1:7860 to ask any questions about your repo
 
 
