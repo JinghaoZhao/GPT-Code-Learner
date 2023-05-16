@@ -11,3 +11,4 @@ beautifulsoup4
 faiss-cpu
 pypdf
 chardet
+sentence-transformers

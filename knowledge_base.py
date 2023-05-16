@@ -11,6 +11,21 @@ from bs4 import BeautifulSoup
 import pickle
 from langchain import OpenAI
 from langchain.chains import VectorDBQAWithSourcesChain
+from langchain.embeddings.base import Embeddings
+from sentence_transformers import SentenceTransformer
+
+
+class LocalHuggingFaceEmbeddings(Embeddings):
+    def __init__(self, model_id="all-mpnet-base-v2"):
+        self.model = SentenceTransformer(model_id)
+
+    def embed_documents(self, texts):
+        embeddings = self.model.encode(texts)
+        return embeddings
+
+    def embed_query(self, text):
+        embedding = self.model.encode(text)
+        return list(map(float, embedding))
 
 
 def load_documents(filenames):
@@ -57,7 +72,12 @@ def load_code_chunks(chunks, filepath):
 
 
 def local_vdb(knowledge, vdb_path=None):
-    faiss_store = FAISS.from_documents(knowledge["known_docs"], embedding=OpenAIEmbeddings())
+    llm_type = os.environ.get('LLM_TYPE', "local")
+    if llm_type == "local":
+        embedding = LocalHuggingFaceEmbeddings()
+    else:
+        embedding = OpenAIEmbeddings()
+    faiss_store = FAISS.from_documents(knowledge["known_docs"], embedding=embedding)
     faiss_store.add_texts(knowledge["known_text"]["pages"], metadatas=knowledge["known_text"]["metadatas"])
     if vdb_path is not None:
         with open(vdb_path, "wb") as f:
@@ -87,7 +107,7 @@ def supabase_vdb(knowledge):
 
 if __name__ == "__main__":
     load_dotenv(find_dotenv())
-    openai.api_key = os.environ.get("OPENAI_API_KEY")
+    openai.api_key = os.environ.get("OPENAI_API_KEY", "null")
 
     query = "What is the usage of this repo?"
     files = ["./README.md"]
@@ -99,12 +119,12 @@ if __name__ == "__main__":
     knowledge_base = {"known_docs": known_docs, "known_text": {"pages": known_pages, "metadatas": metadatas}}
 
     faiss_store = local_vdb(knowledge_base)
-    matched_docs = faiss_store.similarity_search_with_relevance_scores(query)
+    matched_docs = faiss_store.similarity_search(query)
     for doc in matched_docs:
         print("------------------------\n", doc)
 
     supabase_store = supabase_vdb(knowledge_base)
-    matched_docs = supabase_store.similarity_search_with_relevance_scores(query)
+    matched_docs = supabase_store.similarity_search(query)
     for doc in matched_docs:
         print("------------------------\n", doc)
 
