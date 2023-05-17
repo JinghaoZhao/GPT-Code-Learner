@@ -30,7 +30,7 @@ If you want to run the whole program locally, please change the following line i
 ```
 LLM_TYPE="local"
 ```
-3. clone the repo you want to learn into `code_repo` folder:
+3. Put the repo url (e.g., Github link) in the `Repo Link` textbox and click `Analyze Code Repo` button in the GUI. Or manually clone the repo you want to learn into `code_repo` folder:
 ```
 cd code_repo
 git clone <repo_url>

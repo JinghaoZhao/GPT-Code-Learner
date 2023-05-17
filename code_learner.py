@@ -3,9 +3,8 @@ import json
 import requests
 import os
 from termcolor import colored
-from repo_parser import get_readme, get_repo_structure
+from repo_parser import clone_repo, generate_or_load_knowledge_from_repo
 import tool_planner
-
 
 llm_type = os.environ.get('LLM_TYPE', "local")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "null")
@@ -18,27 +17,15 @@ else:
 
 code_repo_path = "./code_repo"
 
-readme_info = get_readme(code_repo_path)
-if readme_info is not None:
-    readme_info = """The README.md file is as follows: """ + readme_info + "\n\n"
-
-repo_structure = get_repo_structure(code_repo_path)
-if repo_structure is not None:
-    repo_structure = """The repo structure is as follows: """ + get_repo_structure(code_repo_path) + "\n\n"
-
 init_system_prompt = """Now you are an expert programmer and teacher of a code repository. 
     You will be asked to explain the code for a specific task in the repo.
     You will be provided with some related code snippets or documents related to the question.
     Please think the explanation step-by-step.
     Please answer the questions based on your knowledge, and you can also refer to the provided related code snippets.
     The README.md file and the repo structure are also available for your reference.
-    If you need any details clarified, please ask questions until all issues are clarified.
+    If you need any details clarified, please ask questions until all issues are clarified. \n\n
 """
 system_prompt = init_system_prompt
-if readme_info:
-    system_prompt += readme_info
-if repo_structure:
-    system_prompt += repo_structure
 
 
 def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chatbot=[], history=[]):
@@ -65,9 +52,9 @@ def generate_response(system_msg, inputs, top_p, temperature, chat_counter, chat
         initial_message = [{"role": "user", "content": f"{inputs}"}]
         multi_turn_message = []
     else:
-        initial_message = [{"role": "system", "content": init_system_prompt},
+        initial_message = [{"role": "system", "content": system_msg},
                            {"role": "user", "content": f"{inputs}"}]
-        multi_turn_message = [{"role": "system", "content": system_prompt}]
+        multi_turn_message = [{"role": "system", "content": init_system_prompt}]
 
     if chat_counter == 0:
         payload = {
@@ -158,6 +145,18 @@ def set_visible_true():
     return gr.update(visible=True)
 
 
+def analyze_repo(repo_url, progress=gr.Progress()):
+    progress(0, desc="Starting")
+    repo_information = clone_repo(repo_url, progress)
+
+    progress(0.6, desc="Building Knowledge Base")
+    generate_or_load_knowledge_from_repo()
+
+    if repo_information is not None:
+        return init_system_prompt + repo_information, "Analysis completed"
+    else:
+        return init_system_prompt, "Analysis failed"
+
 def main():
     title = """<h1 align="center">GPT-Code-Learner</h1>"""
 
@@ -183,6 +182,21 @@ def main():
                     value="Refresh the app to reset system message",
                     visible=False
                 )
+            # Add text box for the repo link with submit button
+            with gr.Row():
+                with gr.Column(scale=6):
+                    repo_url = gr.Textbox(
+                        placeholder="Repo Link",
+                        lines=1,
+                        label="Repo Link"
+                    )
+                with gr.Column(scale=2):
+                    repo_link_btn = gr.Button("Analyze Code Repo").style(full_width=True)
+                with gr.Column(scale=2):
+                    analyze_progress = gr.Textbox(label="Status")
+
+            repo_link_btn.click(analyze_repo, [repo_url], [system_msg, analyze_progress])
+
             with gr.Row():
                 with gr.Column(scale=10):
                     chatbot = gr.Chatbot(

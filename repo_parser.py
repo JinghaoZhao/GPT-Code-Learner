@@ -8,6 +8,32 @@ from knowledge_base import load_documents, load_code_chunks, supabase_vdb, local
 from collections import deque
 from pathlib import Path
 import util
+import subprocess
+import gradio as gr
+
+def clone_repo(git_url, progress=gr.Progress(), code_repo_path="./code_repo"):
+    print(progress(0.1, desc="Cloning the repo..."))
+    print("Cloning the repo: ", git_url)
+    # Check if directory exists
+    if not os.path.exists(code_repo_path):
+        os.makedirs(code_repo_path)
+    try:
+        subprocess.check_call(['git', 'clone', git_url], cwd=code_repo_path)
+        print(f"Successfully cloned {git_url} into {code_repo_path}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e.output}")
+
+    print(progress(0.3, desc="Summarizing the repo..."))
+    readme_info = get_readme(code_repo_path)
+    if readme_info is not None:
+        readme_info = """The README.md file is as follows: """ + readme_info + "\n\n"
+
+    print(progress(0.4, desc="Parsing repo structure..."))
+    repo_structure = get_repo_structure(code_repo_path)
+    if repo_structure is not None:
+        repo_structure = """The repo structure is as follows: """ + get_repo_structure(code_repo_path) + "\n\n"
+
+    return readme_info + repo_structure
 
 
 def split_file_content_by_function(filepath, file_ext):
@@ -176,6 +202,7 @@ def generate_or_load_knowledge_from_repo(dir_path="./code_repo"):
                        '.vscode']
         knowledge = generate_knowledge_from_repo(dir_path, ignore_list)
         vdb = local_vdb(knowledge, vdb_path=vdb_path)
+    print(colored("VDB generated!", "green"))
     return vdb
 
 
