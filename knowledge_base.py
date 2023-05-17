@@ -3,7 +3,7 @@ from dotenv import load_dotenv, find_dotenv
 import os
 from supabase import create_client, Client
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
 from langchain.vectorstores import FAISS, SupabaseVectorStore
 from langchain.document_loaders import TextLoader, PyPDFLoader
 import requests
@@ -29,7 +29,11 @@ class LocalHuggingFaceEmbeddings(Embeddings):
 
 
 def load_documents(filenames):
-    text_splitter = CharacterTextSplitter(chunk_size=1500, chunk_overlap=0)
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1500,
+        chunk_overlap=200,
+        length_function=len,
+    )
     docs = []
     for filename in filenames:
         if filename.endswith(".pdf"):

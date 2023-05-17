@@ -11,6 +11,7 @@ import util
 import subprocess
 import gradio as gr
 
+
 def clone_repo(git_url, progress=gr.Progress(), code_repo_path="./code_repo"):
     print(progress(0.1, desc="Cloning the repo..."))
     print("Cloning the repo: ", git_url)
@@ -79,15 +80,19 @@ def generate_knowledge_from_repo(dir_path, ignore_list):
                 continue
             filepath = os.path.join(root, file)
             try:
-                # Extract the file extension
-                file_ext = os.path.splitext(filepath)[1]
-                if file_ext not in {'.py', '.js', '.java', '.cpp'}:
-                    knowledge["known_docs"].extend(load_documents([filepath]))
-                else:
-                    chunks = split_file_content_by_function(filepath, file_ext)
-                    code_pieces, metadatas = load_code_chunks(chunks, filepath)
-                    knowledge["known_text"]["pages"].extend(code_pieces)
-                    knowledge["known_text"]["metadatas"].extend(metadatas)
+                # Using a more general way for code file parsing
+                knowledge["known_docs"].extend(load_documents([filepath]))
+
+                # # Deprecated: Extract the file extension
+                # file_ext = os.path.splitext(filepath)[1]
+                # if file_ext not in {'.py', '.js', '.java', '.cpp'}:
+                #     knowledge["known_docs"].extend(load_documents([filepath]))
+                # else:
+                #     chunks = split_file_content_by_function(filepath, file_ext)
+                #     code_pieces, metadatas = load_code_chunks(chunks, filepath)
+                #     knowledge["known_text"]["pages"].extend(code_pieces)
+                #     knowledge["known_text"]["metadatas"].extend(metadatas)
+
             except Exception as e:
                 print(f"Failed to process {filepath} due to error: {str(e)}")
 
