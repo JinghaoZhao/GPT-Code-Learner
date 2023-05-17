@@ -16,7 +16,7 @@ def extract_grep_output(line):
         filename, line_number, line_content = match_dash.groups()
         return [filename, line_number, line_content]
     else:
-        return None
+        return ["", "", line]
 
 
 def search_function_with_context(function_name, before_lines=5, after_lines=10, search_dir="./code_repo"):

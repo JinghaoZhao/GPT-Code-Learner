@@ -13,6 +13,7 @@ from langchain import OpenAI
 from langchain.chains import VectorDBQAWithSourcesChain
 from langchain.embeddings.base import Embeddings
 from sentence_transformers import SentenceTransformer
+from termcolor import colored
 
 
 class LocalHuggingFaceEmbeddings(Embeddings):
@@ -80,9 +81,9 @@ def local_vdb(knowledge, vdb_path=None):
     if llm_type == "local":
         embedding = LocalHuggingFaceEmbeddings()
     else:
-        embedding = OpenAIEmbeddings()
+        embedding = OpenAIEmbeddings(disallowed_special=())
+    print(colored("Embedding documents...", "green"))
     faiss_store = FAISS.from_documents(knowledge["known_docs"], embedding=embedding)
-    faiss_store.add_texts(knowledge["known_text"]["pages"], metadatas=knowledge["known_text"]["metadatas"])
     if vdb_path is not None:
         with open(vdb_path, "wb") as f:
             pickle.dump(faiss_store, f)

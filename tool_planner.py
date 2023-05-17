@@ -37,6 +37,9 @@ def tool_selection(input):
 
         - Question: How does this repo generate the UI interface?
         - Repo_Parser 
+        
+        - Question: How to use Text Splitters in this repo?
+        - Repo_Parser
 
         - Question: How to use the python asyncio library?
         - No_Tool
