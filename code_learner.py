@@ -10,7 +10,7 @@ llm_type = os.environ.get('LLM_TYPE', "local")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "null")
 if llm_type == "local":
     API_URL = "http://localhost:8080/v1/chat/completions"
-    model = "ggml-alpaca-7b-q4.bin"
+    model = "ggml-gpt4all-j"
 else:
     API_URL = "https://api.openai.com/v1/chat/completions"
     model = "gpt-3.5-turbo"
