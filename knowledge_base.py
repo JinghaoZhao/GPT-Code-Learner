@@ -77,8 +77,8 @@ def load_code_chunks(chunks, filepath):
 
 
 def local_vdb(knowledge, vdb_path=None):
-    llm_type = os.environ.get('LLM_TYPE', "local")
-    if llm_type == "local":
+    embedding_type = os.environ.get('EMBEDDING_TYPE', "local")
+    if embedding_type == "local":
         embedding = LocalHuggingFaceEmbeddings()
     else:
         embedding = OpenAIEmbeddings(disallowed_special=())

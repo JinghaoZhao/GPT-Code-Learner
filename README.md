@@ -25,10 +25,12 @@ pip install -r requirements.txt
 ```
 OPENAI_API_KEY=sk-xxxxxx
 LLM_TYPE="OpenAI"
+EMBEDDING_TYPE="OpenAI"
 ```
 If you want to run the whole program locally, please change the following line in the `.env` file:
 ```
 LLM_TYPE="local"
+EMBEDDING_TYPE="local"
 ```
 3. Put the repo url (e.g., Github link) in the `Repo Link` textbox and click `Analyze Code Repo` button in the GUI. Or manually clone the repo you want to learn into `code_repo` folder:
 ```
