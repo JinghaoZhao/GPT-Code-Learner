@@ -219,7 +219,7 @@ def main():
                 gr.Examples(
                     examples=[
                         ["What is the usage of this repo?"],
-                        ["Which function lunch the application in the repo?"],
+                        ["Which function launches the application in the repo?"],
                     ],
                     inputs=inputs)
 
