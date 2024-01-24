@@ -1,6 +1,6 @@
 python-dotenv
 hupper
-gradio
+gradio==3.41.2  # Specifying the version
 termcolor
 openai
 tenacity
