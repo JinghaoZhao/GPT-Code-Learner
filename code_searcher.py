@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 
@@ -20,6 +21,21 @@ def extract_grep_output(line):
 
 
 def search_function_with_context(function_name, before_lines=5, after_lines=10, search_dir="./code_repo"):
+    pattern = re.compile(function_name)
+    grep_result = ""
+    for root, dirs, files in os.walk(search_dir):
+        for file in files:
+            file_path = os.path.join(root, file)
+            with open(file_path, 'r', encoding='utf-8',errors='ignore') as f:
+                lines = f.readlines()
+                for i, line in enumerate(lines):
+                    if pattern.search(line):
+                        start = max(0, i-before_lines)
+                        end = min(len(lines), i+after_lines+1)
+                        # print(''.join(lines[start:end]))
+                        grep_result += f"{''.join(lines[start:end])}\n"
+                        # print("--" * 40)
+    
     command = [
         "grep",
         "-r",  # Recursive search
@@ -29,12 +45,12 @@ def search_function_with_context(function_name, before_lines=5, after_lines=10, 
         f"{function_name}",  # The search pattern
         search_dir
     ]
-
     # Run the command and capture the output
-    result = subprocess.run(command, capture_output=True, text=True)
+    # result = subprocess.run(command, capture_output=True, text=True)
 
     # Split the output by lines
-    output_lines = result.stdout.splitlines()
+    # output_lines = result.stdout.splitlines()
+    output_lines = grep_result.splitlines()
 
     # Group the lines by occurrence
     occurrences = []

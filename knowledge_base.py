@@ -2,19 +2,19 @@ import openai
 from dotenv import load_dotenv, find_dotenv
 import os
 from supabase import create_client, Client
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter, CharacterTextSplitter
-from langchain.vectorstores import FAISS, SupabaseVectorStore
-from langchain.document_loaders import TextLoader, PyPDFLoader
 import requests
 from bs4 import BeautifulSoup
 import pickle
-from langchain import OpenAI
+from langchain_community.llms.openai import OpenAI
 from langchain.chains import VectorDBQAWithSourcesChain
-from langchain.embeddings.base import Embeddings
 from sentence_transformers import SentenceTransformer
 from termcolor import colored
-
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS, SupabaseVectorStore
+from langchain_core.embeddings import Embeddings
+from langchain_text_splitters import CharacterTextSplitter, RecursiveCharacterTextSplitter
+import shutil
 
 class LocalHuggingFaceEmbeddings(Embeddings):
     def __init__(self, model_id="all-mpnet-base-v2"):
@@ -85,17 +85,24 @@ def local_vdb(knowledge, vdb_path=None):
     print(colored("Embedding documents...", "green"))
     faiss_store = FAISS.from_documents(knowledge["known_docs"], embedding=embedding)
     if vdb_path is not None:
-        with open(vdb_path, "wb") as f:
-            pickle.dump(faiss_store, f)
 
+        faiss_store.save_local(vdb_path)
+        # path = "./vdb/index.pkl"
+        # shutil.copyfile(path, vdb_path)
     return faiss_store
 
 
 def load_local_vdb(vdb_path):
-    with open(vdb_path, "rb") as f:
-        faiss_store = pickle.load(f)
-
-    return faiss_store
+    if os.path.getsize(vdb_path) > 0:
+        with open(vdb_path, "rb") as f:
+            try:
+                faiss_store = FAISS.load_local(vdb_path, OpenAIEmbeddings,allow_dangerous_deserialization=True)
+                return faiss_store
+            except EOFError:
+                print("File is broken or wrong format.")
+    else:
+        print("File content is empty.")
+    return None
 
 
 def supabase_vdb(knowledge):

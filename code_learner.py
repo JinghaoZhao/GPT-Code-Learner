@@ -191,7 +191,7 @@ def main():
                         label="Repo Link"
                     )
                 with gr.Column(scale=2):
-                    repo_link_btn = gr.Button("Analyze Code Repo").style(full_width=True)
+                    repo_link_btn = gr.Button("Analyze Code Repo")
                 with gr.Column(scale=2):
                     analyze_progress = gr.Textbox(label="Status")
 
@@ -213,7 +213,7 @@ def main():
                         label="Type an input and press Enter"
                     )
                 with gr.Column(scale=2):
-                    b1 = gr.Button().style(full_width=True)
+                    b1 = gr.Button()
 
             with gr.Accordion(label="Examples", open=True):
                 gr.Examples(
@@ -243,7 +243,7 @@ def main():
         b1.click(reset_textbox, [], [inputs])
         inputs.submit(reset_textbox, [], [inputs])
 
-    demo.queue(max_size=99, concurrency_count=20).launch(debug=True)
+    demo.queue(max_size=99).launch(debug=True)
 
 
 if __name__ == "__main__":

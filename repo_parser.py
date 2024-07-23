@@ -69,7 +69,7 @@ def find_repo_folder(directory):
 def find_readme(repo_folder):
     # Search for the README file within the found folder
     for filename in os.listdir(repo_folder):
-        if filename.lower().startswith('readme'):
+        if filename.lower().startswith('readme') and filename.endswith('.md'):
             readme_path = os.path.join(repo_folder, filename)
             print("README found in folder:", repo_folder)
             return readme_path
@@ -89,7 +89,7 @@ def summarize_readme(readme_path):
             Provide enough information about the code repository.
             Please also mention the framework used in the code repository.
             """
-        readme_content = open(readme_path, "r").read()
+        readme_content = open(readme_path, "r", encoding="UTF-8").read()
         user_prompt = f'Here is the README content: {readme_content}'
         return util.get_chat_response(system_prompt, user_prompt)
 

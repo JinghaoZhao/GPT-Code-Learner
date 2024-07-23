@@ -1,9 +1,9 @@
 import os
 from dotenv import load_dotenv, find_dotenv
 from termcolor import colored
-from langchain.llms import OpenAI
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
+from langchain_community.chat_models import ChatOpenAI
+from langchain_community.llms import OpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
 
 load_dotenv(find_dotenv())
 
